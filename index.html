@@ -132,33 +132,32 @@
 </footer>
 
 <script>
-    // SCRIPT PARA MANEJAR EL CLICK EN MOVIL Y PC
     document.addEventListener('DOMContentLoaded', function() {
         const menuItems = document.querySelectorAll('.menu-item.has-submenu');
 
         menuItems.forEach(item => {
             item.addEventListener('click', function(e) {
-                // Si el click fue en un enlace dentro del submenu, no hacemos nada (dejamos que navegue)
+               
                 if (e.target.tagName === 'A') {
                     return;
                 }
                 
-                // Evitamos el comportamiento por defecto si fuera necesario
+                
                 e.stopPropagation();
 
-                // Cerramos otros menús abiertos (opcional, para que no se amontonen)
+                
                 menuItems.forEach(otherItem => {
                     if (otherItem !== item) {
                         otherItem.classList.remove('active');
                     }
                 });
 
-                // Alternamos la clase 'active' en el elemento clickeado
+                
                 this.classList.toggle('active');
             });
         });
 
-        // Cerrar menú si se hace click fuera
+        
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.menu-item')) {
                 menuItems.forEach(item => {
