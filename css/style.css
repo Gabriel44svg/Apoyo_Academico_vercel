@@ -158,3 +158,98 @@ footer {
     font-size: 0.9rem;
     margin-top: auto;
 }
+
+@media (max-width: 900px) {
+
+    /* Header se coloca vertical */
+    header {
+        flex-direction: column;
+        text-align: center;
+        padding: 15px 10px;
+    }
+
+    .logo {
+        height: 60px;
+    }
+
+    .titulo-facultad {
+        font-size: 1rem;
+        margin-top: 10px;
+    }
+
+    /* Nav superior más compacto */
+    .top-nav {
+        justify-content: center;
+        padding: 10px 10px;
+    }
+
+    .top-nav a {
+        margin: 10px;
+        font-size: 0.85rem;
+    }
+
+    /* Sidebar pasa arriba como menú vertical */
+    .main-container {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        min-height: auto;
+        border-bottom: 3px solid #D59F0F;
+    }
+
+    /* Submenú  */
+    .submenu {
+        position: static;
+        width: 100%;
+        display: none;
+        box-shadow: none;
+        background-color: rgba(40,40,40,0.95);
+        padding-left: 20px;
+    }
+
+    .menu-item:hover .submenu {
+        display: block;
+    }
+
+    /* Contenido ocupa todo */
+    .info-box {
+        width: 95%;
+        padding: 25px;
+        font-size: 0.95rem;
+    }
+}
+
+
+@media (max-width: 500px) {
+
+    .logo {
+        height: 48px;
+    }
+
+    .top-nav a {
+        font-size: 0.8rem;
+        margin: 6px;
+    }
+
+    .menu-item {
+        padding: 12px 15px;
+        font-size: 0.9rem;
+    }
+
+    .submenu a {
+        font-size: 0.85rem;
+        padding: 10px;
+    }
+
+    .info-box {
+        padding: 20px;
+        font-size: 0.9rem;
+    }
+
+    footer {
+        font-size: 0.8rem;
+        padding: 10px;
+    }
+}
