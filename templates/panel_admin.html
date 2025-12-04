@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Panel de Administración - FES Acatlán{% endblock %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <h2 style="color: #004e90; border-bottom: 2px solid #d1a938;">Panel de Control (Administrador)</h2>
+
+    <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0;">Gestión de Profesores</h3>
+            <a href="{% url 'crear_profesor' %}" style="background: #27ae60; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">+ Nuevo Profesor</a>
+        </div>
+        
+        <table style="width: 100%; margin-top: 15px; border-collapse: collapse;">
+            <thead style="background: #004e90; color: white;">
+                <tr>
+                    <th style="padding: 10px;">Usuario</th>
+                    <th style="padding: 10px;">Nombre</th>
+                    <th style="padding: 10px;">Email</th>
+                    <th style="padding: 10px;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for profe in profesores %}
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 10px;">{{ profe.username }}</td>
+                    <td style="padding: 10px;">{{ profe.first_name }}</td>
+                    <td style="padding: 10px;">{{ profe.email|default:"--" }}</td>
+                    <td style="padding: 10px;">
+                        <a href="{% url 'reset_password' profe.id %}" style="color: #d35400; font-weight: bold; margin-right: 10px;"> Cambiar Clave</a>
+                        <a href="{% url 'eliminar_usuario' profe.id %}" onclick="return confirm('¿Eliminar a este profesor? Se borrarán sus materiales.')" style="color: #c0392b; font-weight: bold;"> Eliminar</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" style="padding: 20px; text-align: center;">No hay profesores registrados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <h3>Últimos Materiales Subidos</h3>
+        <table style="width: 100%; margin-top: 15px; border-collapse: collapse;">
+            <thead style="background: #555; color: white;">
+                <tr>
+                    <th style="padding: 10px;">Materia</th>
+                    <th style="padding: 10px;">Tipo</th>
+                    <th style="padding: 10px;">Título</th>
+                    <th style="padding: 10px;">Autor</th>
+                    <th style="padding: 10px;">Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in contenidos %}
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 10px;">{{ item.get_materia_display }}</td>
+                    <td style="padding: 10px;">{{ item.get_tipo_display }}</td>
+                    <td style="padding: 10px;">{{ item.titulo }}</td>
+                    <td style="padding: 10px;">{{ item.autor.username }}</td>
+                    <td style="padding: 10px;">
+                        <a href="{% url 'eliminar_contenido' item.id %}" onclick="return confirm('¿Seguro que deseas eliminar este material permanentemente?')" style="color: red;">🗑 Eliminar</a>
+                        <a href="{% url 'detalle_materia' item.materia %}" target="_blank" style="color: #004e90; margin-left: 5px;">👁 Ver</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

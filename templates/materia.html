@@ -1,0 +1,308 @@
+{% extends 'base.html' %}
+{% load markdown_extras %}
+
+{% block title %}
+    {{ nombre_materia }} - Portal de Apoyo
+{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/notebookjs@0.6.6/notebook.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+
+<style>
+
+/* --- COLORES INSTITUCIONALES UNAM --- */
+:root {
+    --azul-unam: #003366;
+    --azul-claro: #e3edf9;
+    --dorado-unam: #d1a938;
+    --texto-azul: #002850;
+    --bg-blanco: #ffffff;
+}
+
+/* Fondo general */
+body {
+    background: var(--bg-blanco);
+    color: var(--texto-azul);
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* ANIMACIÓN SUAVE DE ENTRADA */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Encabezado de materia */
+.materia-header h2 {
+    animation: fadeInUp 0.6s ease-out;
+    color: var(--azul-unam) !important;
+    border-bottom: 4px solid var(--dorado-unam) !important;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+/* Títulos de secciones */
+.seccion-contenido h3 {
+    background: var(--azul-claro) !important;
+    border-left: 6px solid var(--azul-unam) !important;
+    color: var(--texto-azul) !important;
+    animation: fadeInUp 0.7s ease-out;
+}
+
+/* TARJETA PRINCIPAL DEL MATERIAL */
+.tarjeta-material {
+    border: 2px solid var(--azul-unam) !important;
+    background: var(--bg-blanco) !important;
+    border-radius: 12px !important;
+    padding: 25px !important;
+    animation: fadeInUp 0.6s ease;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.tarjeta-material:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+/* Títulos dentro de cada tarjeta */
+.tarjeta-material h4 {
+    color: var(--azul-unam) !important;
+}
+
+/* Caja del ponente */
+.tarjeta-material .ponente-box {
+    background: var(--azul-claro);
+    border: 1px solid var(--azul-unam);
+}
+
+/* Botones */
+.btn-toggle {
+    background: var(--azul-claro) !important;
+    color: var(--texto-azul) !important;
+    border: 1px solid var(--azul-unam) !important;
+    font-weight: bold;
+    border-radius: 6px;
+    transition: all 0.3s ease !important;
+}
+
+.btn-toggle:hover {
+    background: var(--azul-unam) !important;
+    color: white !important;
+}
+
+/* Enlaces de descarga */
+.link-descarga {
+    color: var(--azul-unam) !important;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+/* Zona de archivos */
+.zona-documentos {
+    border-top: 2px solid var(--azul-unam) !important;
+    background: #fdfdfd !important;
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* Visor de contenido */
+.visor-contenido {
+    border: 1px solid var(--azul-unam) !important;
+    box-shadow: 0 0 15px rgba(0,0,0,0.05);
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Imagenes */
+.tarjeta-material img {
+    border: 2px solid var(--azul-unam) !important;
+}
+
+/* Video */
+.tarjeta-material video {
+    border: 2px solid var(--azul-unam) !important;
+}
+
+/* Alerta cuando no hay contenido */
+.alerta {
+    background: var(--azul-claro);
+    border: 2px dashed var(--azul-unam);
+    border-radius: 12px;
+    animation: fadeInUp 0.6s;
+}
+
+</style>
+
+
+<div class="materia-header">
+    <h2 style="color: #004e90; border-bottom: 4px solid #d1a938; padding-bottom: 10px; margin-bottom: 30px;">
+        {{ nombre_materia }}
+    </h2>
+</div>
+
+{% for tipo_codigo, tipo_nombre, materiales in contenido_agrupado %}
+    {% if materiales %}
+        <div id="{{ tipo_codigo }}" class="seccion-contenido" style="margin-bottom: 50px;">
+            <h3 style="color: #444; border-left: 6px solid #004e90; padding-left: 15px; margin-bottom: 25px; font-size: 1.5em; background: #f9f9f9; padding: 10px;">
+                {{ tipo_nombre }}
+            </h3>
+            
+            <div class="lista-materiales">
+                {% for material in materiales %}
+                    <div class="tarjeta-material" style="background: white; padding: 25px; margin-bottom: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #eee;">
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="margin: 0 0 10px 0; color: #222; font-size: 1.4em; font-weight: bold;">
+                                {{ material.titulo }}
+                            </h4>
+
+                            {% if material.ponente %}
+                                <div style="background: #e3f2fd; color: #0d47a1; padding: 10px 15px; border-radius: 6px; display: inline-block; margin-bottom: 15px; border: 1px solid #bbdefb;">
+                                    <span style="font-weight: bold;"> Ponente:</span> {{ material.ponente }}
+                                    {% if material.fecha_evento %}
+                                        <span style="margin-left: 15px; border-left: 1px solid #90caf9; padding-left: 15px; color: #1565c0;">
+                                             {{ material.fecha_evento|date:"d \d\e F, Y" }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+
+                            <div style="color: #555; font-size: 1em; line-height: 1.6;">
+                                {{ material.descripcion|markdown|safe }}
+                            </div>
+                        </div>
+
+                        <div class="zona-visual" style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px;">
+                            {% if material.imagen %}
+                                <div style="flex: 1; min-width: 300px;">
+                                    <p style="font-weight: bold; color: #004e90; margin-bottom: 5px; font-size: 0.9em;">📸 Imagen / Diagrama:</p>
+                                    <img src="{{ material.imagen.url }}" alt="Imagen" style="max-width: 100%; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid #ddd;">
+                                </div>
+                            {% endif %}
+
+                            {% if material.archivo_video or material.link_video %}
+                                <div style="flex: 1; min-width: 300px;">
+                                    <p style="font-weight: bold; color: #c62828; margin-bottom: 5px; font-size: 0.9em;">▶ Video:</p>
+                                    {% if material.archivo_video %}
+                                        <video controls width="100%" style="border-radius: 5px; background: black; max-height: 400px;">
+                                            <source src="{{ material.archivo_video.url }}" type="video/mp4">
+                                            Tu navegador no soporta videos HTML5.
+                                        </video>
+                                    {% elif material.link_video %}
+                                        <div style="padding: 30px; background: #ffebee; text-align: center; border-radius: 5px; border: 1px dashed #ef9a9a;">
+                                            <a href="{{ material.link_video }}" target="_blank" style="color: #c62828; font-weight: bold; text-decoration: none;">
+                                                 Ver Video Externo ↗
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="zona-documentos" style="border-top: 1px solid #eee; padding-top: 20px; background: #fafafa; padding: 15px; border-radius: 5px;">
+                            <p style="font-size: 0.85em; color: #999; margin-top: 0; margin-bottom: 15px; text-transform: uppercase; font-weight: bold;">
+                                 Archivos y Documentos
+                            </p>
+                            
+                            {% if material.archivo_pdf %}
+                                <div style="margin-bottom: 15px;">
+                                    <button class="btn-toggle" onclick="toggleVisor('visor-pdf-{{ material.id }}')">
+                                         Ver Documento PDF
+                                    </button>
+                                    <a href="{{ material.archivo_pdf.url }}" download class="link-descarga" style="margin-left: 10px; color: #004e90; font-size: 0.9em;">Descargar</a>
+                                    
+                                    <div id="visor-pdf-{{ material.id }}" class="visor-contenido" style="display: none;">
+                                        <iframe src="{{ material.archivo_pdf.url }}" width="100%" height="600px" style="border: none;"></iframe>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% if material.archivo_notebook %}
+                                <div style="margin-bottom: 15px;">
+                                    <button class="btn-toggle" onclick="renderizarNotebook('{{ material.archivo_notebook.url }}', 'visor-nb-{{ material.id }}')">
+                                         Visualizar Notebook (.ipynb)
+                                    </button>
+                                    <a href="{{ material.archivo_notebook.url }}" download class="link-descarga" style="margin-left: 10px; color: #e67e22; font-size: 0.9em;">Descargar</a>
+
+                                    <div id="visor-nb-{{ material.id }}" class="visor-contenido" style="display: none; overflow-x: auto;">
+                                        <p style="padding: 20px; text-align: center; color: #666;">⌛ Cargando Notebook...</p>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% if material.link_externo %}
+                                <div style="margin-top: 10px;">
+                                    <a href="{{ material.link_externo }}" target="_blank" style="color: #2e7d32; font-weight: bold; display: inline-flex; align-items: center; gap: 5px;">
+                                         Enlace de Interés Relacionado
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div style="text-align: right; margin-top: 15px; font-size: 0.8em; color: #aaa;">
+                            Subido por: {{ material.autor.username }} | {{ material.fecha_publicacion|date:"d/m/Y H:i" }}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+{% empty %}
+    <div class="alerta" style="padding: 40px; text-align: center; color: #666;">
+        <p>Aún no hay material publicado aquí.</p>
+    </div>
+{% endfor %}
+
+<script>
+    // ESTAS FUNCIONES AHORA SE CARGARÁN SIEMPRE
+    console.log("Scripts de materia cargados correctamente");
+
+    function toggleVisor(id) {
+        const visor = document.getElementById(id);
+        if (!visor) {
+            console.error("No se encontró el elemento con ID:", id);
+            return;
+        }
+        if (visor.style.display === 'none' || visor.style.display === '') {
+            visor.style.display = 'block';
+        } else {
+            visor.style.display = 'none';
+        }
+    }
+
+    function renderizarNotebook(url, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        if (container.style.display === 'block') {
+            container.style.display = 'none';
+            return;
+        }
+        container.style.display = 'block';
+
+        if (container.getAttribute('data-loaded') === 'true') return;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                var notebook = notebookjs.parse(data);
+                container.innerHTML = '';
+                container.appendChild(notebook.render());
+                container.setAttribute('data-loaded', 'true');
+                if(window.MathJax) MathJax.typesetPromise([container]);
+                Prism.highlightAllUnder(container);
+            })
+            .catch(err => {
+                container.innerHTML = '<p style="color:red; text-align:center;">Error al cargar el notebook.</p>';
+                console.error(err);
+            });
+    }
+</script>
+
+{% endblock %}

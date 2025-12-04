@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load markdown_extras %}
+
+{% block title %}Páginas de Interés - Portal Académico{% endblock %}
+
+{% block content %}
+<div class="header-interes" style="text-align: center; margin-bottom: 40px;">
+    <h2 style="color: #004e90; font-size: 2.5em; margin-bottom: 10px;"> Páginas de Interés</h2>
+    <p style="color: #666; font-size: 1.2em;">Recopilación de recursos externos y bibliografía web recomendada por los docentes.</p>
+    <hr style="width: 100px; border: 2px solid #d1a938; margin: 20px auto;">
+</div>
+
+{% regroup links by get_materia_display as links_por_materia %}
+
+<div class="grid-materias" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px;">
+    
+    {% for materia in links_por_materia %}
+        <div class="card-materia" style="background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; border-top: 5px solid #004e90;">
+            <div style="background: #f8f9fa; padding: 15px; border-bottom: 1px solid #eee;">
+                <h3 style="margin: 0; color: #333; font-size: 1.3em;">{{ materia.grouper }}</h3>
+            </div>
+
+            <div style="padding: 0;">
+                {% for item in materia.list %}
+                    <div class="link-item" style="padding: 15px; border-bottom: 1px solid #f0f0f0; transition: background 0.2s;">
+                        <div style="display: flex; align-items: flex-start; gap: 10px;">
+                            <span style="font-size: 1.5em;"></span>
+                            <div>
+                                <a href="{{ item.link_externo }}" target="_blank" style="display: block; font-weight: bold; color: #004e90; text-decoration: none; margin-bottom: 5px;">
+                                    {{ item.titulo }} ↗
+                                </a>
+                                <div style="font-size: 0.9em; color: #555;">
+                                    {{ item.descripcion|markdown|safe|truncatewords:20 }}
+                                </div>
+                                <small style="color: #999; font-size: 0.8em; display: block; margin-top: 5px;">
+                                    Subido por: {{ item.autor.first_name|default:item.autor.username }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% empty %}
+        <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #999;">
+            <p>Aún no se han compartido enlaces de interés.</p>
+        </div>
+    {% endfor %}
+
+</div>
+
+<style>
+    .link-item:hover {
+        background-color: #f0f8ff;
+    }
+    .link-item:last-child {
+        border-bottom: none;
+    }
+</style>
+{% endblock %}

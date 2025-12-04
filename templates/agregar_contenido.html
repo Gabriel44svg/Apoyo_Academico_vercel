@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+
+{% block title %}Agregar Material - Portal Académico{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<div class="form-container" style="max-width: 1100px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+    
+    <h2 style="color: #004e90; border-bottom: 3px solid #d1a938; padding-bottom: 10px; margin-bottom: 25px;">
+        Subir Nuevo Material Didáctico
+    </h2>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+        
+        <div class="col-form">
+            <form method="post" enctype="multipart/form-data" id="form-contenido">
+                {% csrf_token %}
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="font-weight:bold; color:#333;">1. Seleccione la Materia o Evento:</label> 
+                    {{ form.materia }}
+                </div>
+
+                <div id="campos-evento" style="display: none; background: #e8f4f8; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 5px solid #004e90;">
+                    <h4 style="margin-top:0; color:#004e90; font-size:1em;">📅 Detalles del Evento (Coloquio/Seminario)</h4>
+                    
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label style="font-weight:bold;">Nombre del Ponente:</label>
+                        {{ form.ponente }}
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label style="font-weight:bold;">Fecha del Evento:</label>
+                        {{ form.fecha_evento }}
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="font-weight:bold; color:#333;">2. Tipo de Recurso Principal:</label> 
+                    {{ form.tipo }}
+                </div>
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="font-weight:bold; color:#333;" id="label-titulo">Título del Material:</label> 
+                    {{ form.titulo }}
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="font-weight:bold; color:#333;">Explicación / Resumen:</label>
+                    <div style="font-size: 0.8em; color: #666; margin-bottom: 5px; background: #eee; padding: 5px; border-radius: 4px;">
+                        Tip: Usa <b>**negrita**</b>, <i>*cursiva*</i> y fórmulas LaTeX entre signos de pesos: <code>$E=mc^2$</code>.
+                    </div>
+                    {{ form.descripcion }}
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
+                <h4 style="color:#004e90; margin-bottom: 15px;"> Archivos y Multimedia</h4>
+
+                <div class="grid-archivos" style="display: grid; grid-template-columns: 1fr; gap: 15px;">
+                    
+                    <div style="background: #f9f9f9; padding: 10px; border-radius: 5px;">
+                        <label style="font-weight:bold;"> Imagen / Cartel (Opcional):</label><br>
+                        {{ form.imagen }} <script>document.getElementById('id_imagen').setAttribute('onchange', 'previsualizarImagen(this)');</script>
+                    </div>
+
+                    <div style="background: #f9f9f9; padding: 10px; border-radius: 5px;">
+                        <label style="font-weight:bold;"> Archivo PDF:</label><br>
+                        {{ form.archivo_pdf }}
+                        <script>document.getElementById('id_archivo_pdf').setAttribute('onchange', 'previsualizarPDF(this)');</script>
+                    </div>
+
+                    <div style="background: #f9f9f9; padding: 10px; border-radius: 5px;">
+                        <label style="font-weight:bold;"> Video (Archivo MP4):</label><br>
+                        {{ form.archivo_video }}
+                        <script>document.getElementById('id_archivo_video').setAttribute('onchange', 'previsualizarVideo(this)');</script>
+                    </div>
+                    
+                    <div style="background: #f9f9f9; padding: 10px; border-radius: 5px;">
+                        <label style="font-weight:bold;"> Notebook Jupyter (.ipynb):</label><br>
+                        {{ form.archivo_notebook }}
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                            <label style="font-size:0.9em;">Link Video (YouTube):</label>
+                            {{ form.link_video }}
+                        </div>
+                        <div>
+                            <label style="font-size:0.9em;">Enlace Externo:</label>
+                            {{ form.link_externo }}
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" style="margin-top: 30px; background-color: #004e90; color: white; padding: 15px; border: none; border-radius: 5px; width: 100%; cursor: pointer; font-size: 1.2em; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
+                     PUBLICAR MATERIAL
+                </button>
+            </form>
+        </div>
+
+        <div class="col-preview" style="position: sticky; top: 20px; align-self: start;">
+            <div style="background: #f8f9fa; padding: 25px; border: 2px dashed #bbb; border-radius: 8px;">
+                <h4 style="margin-top: 0; color: #555; text-align: center; text-transform: uppercase; letter-spacing: 1px;">
+                     Vista Previa
+                </h4>
+                <hr>
+                
+                <div id="preview-container">
+                    <h3 id="preview-titulo" style="color: #004e90; margin-bottom: 10px;">Título del Material</h3>
+                    
+                    <div id="preview-evento" style="display:none; background: #f0f4ff; color: #004e90; padding: 5px 10px; border-radius: 4px; margin-bottom: 10px; font-weight: bold; font-size: 0.9em;">
+                         Ponente: <span id="preview-ponente">...</span> | 
+                         Fecha: <span id="preview-fecha">...</span>
+                    </div>
+
+                    <div id="preview-descripcion" style="font-size: 0.95em; line-height: 1.6; color: #333;">
+                        La descripción aparecerá aquí...
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 15px;">
+                    
+                    <div id="preview-img-container" style="display:none;">
+                        <p style="font-size:0.8em; font-weight:bold; margin:0;">Imagen:</p>
+                        <img id="visor-img" style="max-width: 100%; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                    </div>
+
+                    <div id="preview-video-container" style="display:none;">
+                        <p style="font-size:0.8em; font-weight:bold; margin:0;">Video:</p>
+                        <video id="visor-video" width="100%" controls style="border-radius:4px; background:black;"></video>
+                    </div>
+
+                    <div id="preview-pdf-container" style="display:none;">
+                        <p style="font-size:0.8em; font-weight:bold; margin:0;">Documento PDF:</p>
+                        <iframe id="visor-pdf" width="100%" height="300px" style="border:1px solid #ddd; background: white;"></iframe>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- REFERENCIAS A ELEMENTOS ---
+    const selectMateria = document.getElementById('select-materia');
+    const inputTitulo = document.getElementById('input-titulo');
+    const inputDesc = document.getElementById('id_descripcion'); 
+    
+    // Elementos de Evento
+    const divEventosForm = document.getElementById('campos-evento');
+    const inputPonente = document.getElementById('id_ponente');
+    const inputFecha = document.getElementById('id_fecha_evento');
+
+    // Elementos de Preview
+    const outTitulo = document.getElementById('preview-titulo');
+    const outDesc = document.getElementById('preview-descripcion');
+    const outEvento = document.getElementById('preview-evento');
+    const outPonente = document.getElementById('preview-ponente');
+    const outFecha = document.getElementById('preview-fecha');
+    const labelTitulo = document.getElementById('label-titulo');
+
+    // --- 1. LÓGICA DE COLOQUIOS / SEMINARIOS ---
+    function verificarTipoMateria() {
+        const valor = selectMateria.value;
+        const esEvento = (valor === 'coloquios' || valor === 'seminarios');
+
+        if (esEvento) {
+            // Mostrar formulario de eventos
+            divEventosForm.style.display = 'block';
+            labelTitulo.innerText = "Tema del Seminario/Coloquio:";
+            if(inputTitulo) inputTitulo.placeholder = "Ej: Avances en Criptografía";
+            
+            // Mostrar en preview
+            outEvento.style.display = 'inline-block';
+        } else {
+            // Ocultar
+            divEventosForm.style.display = 'none';
+            labelTitulo.innerText = "Título del Material:";
+            if(inputTitulo) inputTitulo.placeholder = "Ej: Derivadas Parciales";
+            
+            // Ocultar en preview
+            outEvento.style.display = 'none';
+        }
+    }
+
+    // Event Listeners para Eventos
+    selectMateria.addEventListener('change', verificarTipoMateria);
+    window.addEventListener('load', verificarTipoMateria);
+
+    // Actualizar datos del evento en tiempo real en el preview
+    inputPonente.addEventListener('input', function() { outPonente.innerText = this.value; });
+    inputFecha.addEventListener('input', function() { outFecha.innerText = this.value; });
+
+
+    // --- 2. LÓGICA DE TEXTO (MARKDOWN + LATEX) ---
+    inputTitulo.addEventListener('input', function() {
+        outTitulo.innerText = this.value || "Título del Material";
+    });
+
+    inputDesc.addEventListener('input', function() {
+        const textoRaw = this.value;
+        // A. Convertir Markdown a HTML
+        outDesc.innerHTML = marked.parse(textoRaw);
+
+        // B. Renderizar Fórmulas con MathJax
+        if (window.MathJax) {
+            MathJax.typesetPromise([outDesc]).then(() => {
+                // Fórmulas renderizadas
+            }).catch((err) => console.log(err));
+        }
+    });
+
+    // --- 3. LÓGICA DE ARCHIVOS (BLOB URLS) ---
+    
+    function previsualizarImagen(input) {
+        const container = document.getElementById('preview-img-container');
+        const visor = document.getElementById('visor-img');
+        if (input.files && input.files[0]) {
+            visor.src = URL.createObjectURL(input.files[0]);
+            container.style.display = 'block';
+        } else {
+            container.style.display = 'none';
+        }
+    }
+
+    function previsualizarVideo(input) {
+        const container = document.getElementById('preview-video-container');
+        const visor = document.getElementById('visor-video');
+        if (input.files && input.files[0]) {
+            visor.src = URL.createObjectURL(input.files[0]);
+            container.style.display = 'block';
+            visor.load();
+        } else {
+            container.style.display = 'none';
+        }
+    }
+
+    function previsualizarPDF(input) {
+        const container = document.getElementById('preview-pdf-container');
+        const visor = document.getElementById('visor-pdf');
+        if (input.files && input.files[0]) {
+            visor.src = URL.createObjectURL(input.files[0]);
+            container.style.display = 'block';
+        } else {
+            container.style.display = 'none';
+        }
+    }
+</script>
+
+{% endblock %}
