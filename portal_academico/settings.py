@@ -109,7 +109,7 @@ STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 
 # Carpetas físicas
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Desarrollo
