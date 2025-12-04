@@ -1,3 +1,6 @@
+# build_files.sh
+set -e  # Detener el script si hay cualquier error
+
 echo "Building the project..."
 python3.9 -m pip install -r requirements.txt
 
