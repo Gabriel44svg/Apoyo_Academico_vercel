@@ -59,8 +59,8 @@
                     <td style="padding: 10px;">{{ item.titulo }}</td>
                     <td style="padding: 10px;">{{ item.autor.username }}</td>
                     <td style="padding: 10px;">
-                        <a href="{% url 'eliminar_contenido' item.id %}" onclick="return confirm('¿Seguro que deseas eliminar este material permanentemente?')" style="color: red;">🗑 Eliminar</a>
-                        <a href="{% url 'detalle_materia' item.materia %}" target="_blank" style="color: #004e90; margin-left: 5px;">👁 Ver</a>
+                        <a href="{% url 'eliminar_contenido' item.id %}" onclick="return confirm('¿Seguro que deseas eliminar este material permanentemente?')" style="color: red;"> Eliminar</a>
+                        <a href="{% url 'detalle_materia' item.materia %}" target="_blank" style="color: #004e90; margin-left: 5px;"> Ver</a>
                     </td>
                 </tr>
                 {% endfor %}

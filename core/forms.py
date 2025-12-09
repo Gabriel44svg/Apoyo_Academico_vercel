@@ -18,7 +18,7 @@ class ContenidoForm(forms.ModelForm):
             'imagen',            
             'archivo_pdf',       
             'archivo_notebook',  
-            # 'archivo_video',   <--- (Eliminado como pediste)
+            # 'archivo_video',   
             'link_video',        
             'link_externo'
         ]
