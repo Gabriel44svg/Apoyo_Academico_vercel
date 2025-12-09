@@ -1,6 +1,8 @@
+import os # <--- NECESARIO para leer extensiones
 from django import forms
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.forms import SetPasswordForm
+from django.core.exceptions import ValidationError 
 from .models import Contenido
 
 # ==============================================================================
@@ -10,126 +12,105 @@ class ContenidoForm(forms.ModelForm):
     class Meta:
         model = Contenido
         fields = [
-            # Campos Generales
-            'materia', 
-            'tipo', 
-            'titulo', 
-            
-            # Campos Específicos para Coloquios/Seminarios
-            'ponente', 
-            'fecha_evento',
-            
-            # Descripción (Markdown/LaTeX)
+            'materia', 'tipo', 'titulo', 
+            'ponente', 'fecha_evento',
             'descripcion', 
-            
-            # Archivos y Multimedia (Soporte Múltiple)
-            'imagen',            # Nuevo: Fotos/Diagramas
-            'archivo_pdf',       # Documentos
-            'archivo_notebook',  # Jupyter
-            'archivo_video',     # Archivos MP4
-            'link_video',        # YouTube/Externo
-            'link_externo'       # URLs de interés
+            'imagen',            
+            'archivo_pdf',       
+            'archivo_notebook',  
+            # 'archivo_video',   <--- (Eliminado como pediste)
+            'link_video',        
+            'link_externo'
         ]
         
-        # WIDGETS: Añadimos clases CSS y IDs para control visual y JavaScript
         widgets = {
-            'materia': forms.Select(attrs={
-                'class': 'form-control', 
-                'id': 'select-materia'  # ID CRÍTICO para el script de eventos
-            }),
+            'materia': forms.Select(attrs={'class': 'form-control', 'id': 'select-materia'}),
             'tipo': forms.Select(attrs={'class': 'form-control'}),
+            'titulo': forms.TextInput(attrs={'class': 'form-control', 'id': 'input-titulo', 'placeholder': 'Ej: Derivadas Parciales'}),
+            'ponente': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Dr. Juan Pérez'}),
+            'fecha_evento': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Escribe aquí la explicación...'}),
             
-            'titulo': forms.TextInput(attrs={
-                'class': 'form-control', 
-                'id': 'input-titulo',   # ID CRÍTICO para cambiar placeholder
-                'placeholder': 'Ej: Derivadas Parciales'
+            # --- VALIDACIÓN VISUAL (FILTROS EN EL EXPLORADOR DE ARCHIVOS) ---
+            'imagen': forms.FileInput(attrs={
+                'class': 'form-control-file',
+                'accept': 'image/*'  # Acepta jpg, png, gif, webp, etc.
+            }),
+            'archivo_pdf': forms.FileInput(attrs={
+                'class': 'form-control-file',
+                'accept': '.pdf'     # Solo muestra PDFs
+            }),
+            'archivo_notebook': forms.FileInput(attrs={
+                'class': 'form-control-file',
+                'accept': '.ipynb'   # Solo muestra Notebooks de Jupyter
             }),
             
-            # Campos de Eventos (Ocultos por defecto vía JS en el HTML)
-            'ponente': forms.TextInput(attrs={
-                'class': 'form-control', 
-                'placeholder': 'Ej: Dr. Juan Pérez'
-            }),
-            'fecha_evento': forms.DateInput(attrs={
-                'class': 'form-control', 
-                'type': 'date'  # Activa el calendario nativo del navegador
-            }),
-            
-            'descripcion': forms.Textarea(attrs={
-                'class': 'form-control', 
-                'rows': 4, 
-                'placeholder': 'Escribe aquí la explicación. Soporta **Markdown** y fórmulas LaTeX entre signos $'
-            }),
-            
-            # Inputs de Archivos
-            'imagen': forms.FileInput(attrs={'class': 'form-control-file'}),
-            'archivo_pdf': forms.FileInput(attrs={'class': 'form-control-file'}),
-            'archivo_notebook': forms.FileInput(attrs={'class': 'form-control-file'}),
-            'archivo_video': forms.FileInput(attrs={'class': 'form-control-file'}),
-            
-            # Inputs de Enlaces
-            'link_video': forms.URLInput(attrs={
-                'class': 'form-control', 
-                'placeholder': 'https://youtube.com/...'
-            }),
-            'link_externo': forms.URLInput(attrs={
-                'class': 'form-control', 
-                'placeholder': 'https://sitio-interesante.com'
-            })
+            'link_video': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://youtube.com/...'}),
+            'link_externo': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://sitio-interesante.com'})
         }
 
+    # ==========================================================================
+    # VALIDACIONES DE SERVIDOR (SEGURIDAD REAL)
+    # ==========================================================================
+
+    def clean_imagen(self):
+        imagen = self.cleaned_data.get('imagen')
+        if imagen:
+            # Obtener extensión
+            ext = os.path.splitext(imagen.name)[1].lower()
+            validas = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp']
+            if ext not in validas:
+                raise ValidationError("Solo se permiten archivos de imagen (jpg, png, etc).")
+        return imagen
+
+    def clean_archivo_pdf(self):
+        pdf = self.cleaned_data.get('archivo_pdf')
+        if pdf:
+            ext = os.path.splitext(pdf.name)[1].lower()
+            if ext != '.pdf':
+                raise ValidationError("El archivo debe ser un PDF válido (.pdf).")
+        return pdf
+
+    def clean_archivo_notebook(self):
+        nb = self.cleaned_data.get('archivo_notebook')
+        if nb:
+            ext = os.path.splitext(nb.name)[1].lower()
+            if ext != '.ipynb':
+                raise ValidationError("El archivo debe ser un Jupyter Notebook (.ipynb).")
+        return nb
+
 # ==============================================================================
-# FORMULARIO PARA CREAR PROFESORES (Para Panel Admin)
+# FORMULARIO PARA CREAR PROFESORES
 # ==============================================================================
 class ProfesorCreationForm(forms.ModelForm):
-    # Campos adicionales que no están directos en el modelo User pero necesitamos
-    password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'form-control'}), 
-        label="Contraseña"
-    )
-    nombre_completo = forms.CharField(
-        max_length=100, 
-        label="Nombre del Profesor", 
-        widget=forms.TextInput(attrs={'class': 'form-control'})
-    )
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}), label="Contraseña")
+    nombre_completo = forms.CharField(max_length=100, label="Nombre del Profesor", widget=forms.TextInput(attrs={'class': 'form-control'}))
     
     class Meta:
         model = User
-        fields = ['username', 'email'] # El username será el usuario de acceso
+        fields = ['username', 'email']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
         }
 
     def save(self, commit=True):
-        # 1. Crear la instancia del usuario sin guardar aún en BD
         user = super().save(commit=False)
-        
-        # 2. Establecer la contraseña de forma segura (Hash)
         user.set_password(self.cleaned_data['password'])
-        
-        # 3. Guardar el nombre
         user.first_name = self.cleaned_data['nombre_completo']
-        
         if commit:
             user.save()
-            # 4. Asignar automáticamente al grupo "Profesores"
-            # Esto define sus permisos (solo agregar, no borrar)
             grupo_profes, created = Group.objects.get_or_create(name='Profesores')
             user.groups.add(grupo_profes)
-            
-            # 5. Dar estatus de staff para validaciones internas (pero sin superusuario)
             user.is_staff = True 
             user.save()
-            
         return user
 
 # ==============================================================================
-# FORMULARIO PARA RESETEAR CONTRASEÑA (Para Panel Admin)
+# FORMULARIO PARA RESETEAR CONTRASEÑA
 # ==============================================================================
 class AdminPasswordChangeForm(SetPasswordForm):
     def __init__(self, user, *args, **kwargs):
         super().__init__(user, *args, **kwargs)
-        # Aplicar estilo Bootstrap a todos los campos generados
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
