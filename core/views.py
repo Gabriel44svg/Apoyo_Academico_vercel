@@ -153,14 +153,21 @@ def eliminar_usuario(request, user_id):
 @user_passes_test(es_admin)
 def reset_password(request, user_id):
     usuario = get_object_or_404(User, id=user_id)
+    
     if request.method == 'POST':
-        form = AdminPasswordChangeForm(usuario, request.POST)
+        
+        form = AdminPasswordChangeForm(user=usuario, data=request.POST)
+        
         if form.is_valid():
             form.save()
-            messages.success(request, f'Contraseña restablecida para {usuario.username}')
+            messages.success(request, f'Contraseña restablecida exitosamente para {usuario.username}')
             return redirect('panel_admin')
+        else:
+            
+            messages.error(request, 'Error: La contraseña no cumple los requisitos o no coincide.')
     else:
-        form = AdminPasswordChangeForm(usuario)
+        form = AdminPasswordChangeForm(user=usuario)
+    
     return render(request, 'admin_reset_password.html', {'form': form, 'usuario': usuario})
 
 @user_passes_test(es_admin)
